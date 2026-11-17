@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Yoru">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Crescent moon ("yoru" / 夜 = night) above an open book. -->
+  <path transform="translate(15 2) scale(1.4)" fill="url(#g)" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  <path fill="url(#g)" d="M10 36C16 33.5 26 34 32 39C38 34 48 33.5 54 36L54 49C48 47 38 47.5 32 52C26 47.5 16 47 10 49Z"/>
+</svg>

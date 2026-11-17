@@ -1,0 +1,54 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# Next.js build output
+/.next/
+/out/
+/build
+/dist
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Environment files (keep the documented example)
+.env
+.env.local
+.env.*.local
+.env*.local
+!.env.example
+
+# Local database artifacts (Prisma points at Postgres; these are stale SQLite files)
+data.sqlite
+data.sqlite-*
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+
+# Runtime uploads written by /api/auth/profile/image
+/public/uploads/
+
+# Vercel
+.vercel
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+/coverage
+
+# macOS
+.DS_Store
+
+# Local throwaway scripts (see header comments in scripts/_tmp_*)
+scripts/_tmp_*
+
+# Misc
+*.pem

@@ -1,0 +1,24 @@
+{
+  // Use the project's TypeScript 5.9.3 instead of VS Code's bundled copy, so the
+  // editor and `tsc --noEmit` / `next build` can never disagree about types.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+
+  // ESLint 9 + eslint.config.mjs is a flat config.
+  "eslint.useFlatConfig": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Prisma client types are regenerated into node_modules/.prisma/client. The
+  // TS server caches them, so it must be restarted after `prisma generate` or
+  // new models show as red errors that `tsc` does not report.
+  "editor.formatOnSave": false
+}

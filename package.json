@@ -1,0 +1,51 @@
+{
+  "name": "yoru",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "import:mangadex": "tsx --env-file=.env.local scripts/import-mangadex.ts",
+    "import:atsumaru": "tsx --env-file=.env.local scripts/import-atsumaru.ts",
+    "migrate:atsumaru": "tsx --env-file=.env.local scripts/migrate-to-atsumaru.ts",
+    "add:scanlators": "tsx --env-file=.env.local scripts/add-atsumaru-scanlators.ts",
+    "scanlators": "tsx --env-file=.env.local scripts/list-scanlators.ts",
+    "icons:build": "tsx scripts/generate-icons.ts",
+    "check:order": "tsx --env-file=.env.local scripts/check-reading-order.ts",
+    "backfill:tags": "tsx --env-file=.env.local scripts/backfill-extra-tags.ts",
+    "backfill:formats": "tsx --env-file=.env.local scripts/backfill-format-tags.ts",
+    "check:read-progress": "tsx scripts/check-read-progress.ts",
+    "check:updates-for-you": "tsx scripts/check-updates-for-you.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "motion": "^13.3.0",
+    "next": "latest",
+    "nodemailer": "^6.9.15",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^20.11.0",
+    "@types/nodemailer": "^6.4.14",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.19",
+    "baseline-browser-mapping": "^2.10.0",
+    "eslint": "^9.13.0",
+    "eslint-config-next": "latest",
+    "postcss": "^8.4.31",
+    "prisma": "^5.18.0",
+    "sharp": "^0.35.4",
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.21.0",
+    "typescript": "^5.4.0"
+  }
+}

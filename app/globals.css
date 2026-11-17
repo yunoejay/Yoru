@@ -1,0 +1,352 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 18px;
+  color-scheme: dark light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Dark Mode (default) */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  @apply bg-bg text-gray-100;
+}
+
+/* Light Mode */
+html:not(.dark) {
+  color-scheme: light;
+}
+
+html:not(.dark) body {
+  @apply bg-white text-gray-900;
+}
+
+body {
+  @apply min-h-screen font-sans antialiased transition-colors duration-300;
+  background-image:
+    radial-gradient(circle at top, rgba(99, 102, 241, 0.14), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 24%);
+}
+
+/* Card styling for both modes */
+html.dark .card-surface {
+  @apply bg-bg-alt border-gray-800/60;
+}
+
+html:not(.dark) .card-surface {
+  @apply bg-gray-50 border-gray-200;
+}
+
+/* Navbar styling */
+html.dark header {
+  @apply border-gray-800/60 bg-bg/80;
+}
+
+html:not(.dark) header {
+  @apply border-gray-200 bg-white/80;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #101317;
+}
+
+html:not(.dark) ::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #2a313b;
+  border-radius: 10px;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3b4654;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 10px;
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
+
+/* Utility */
+.container-padded {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+.card-surface {
+  @apply rounded-[1.5rem] border shadow-card;
+}
+
+.hero-panel {
+  @apply relative rounded-[2rem] border shadow-2xl backdrop-blur-xl;
+}
+
+.info-card {
+  @apply rounded-[1.75rem] border p-6 shadow-card backdrop-blur;
+}
+
+.section-pill {
+  @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em];
+}
+
+.stat-card {
+  @apply flex flex-col rounded-[1.5rem] border p-4 backdrop-blur;
+}
+
+.stat-value {
+  @apply text-2xl font-semibold;
+}
+
+.stat-label {
+  @apply mt-1 text-xs uppercase tracking-[0.2em];
+}
+
+.nav-link {
+  @apply rounded-full px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/5 hover:text-white;
+}
+
+.theme-toggle {
+  @apply border-white/10 bg-white/5 text-slate-100 hover:bg-white/10;
+}
+
+html:not(.dark) .nav-link {
+  @apply text-slate-700 hover:bg-slate-900/5 hover:text-slate-950;
+}
+
+html:not(.dark) .theme-toggle {
+  @apply border-slate-300 bg-white text-slate-900 hover:bg-slate-100;
+}
+
+html.dark .hero-panel {
+  @apply border-white/10 bg-slate-950/70 shadow-black/20;
+}
+
+html:not(.dark) .hero-panel {
+  @apply border-slate-200 bg-white/90 shadow-slate-300/30;
+}
+
+html.dark .info-card {
+  @apply border-white/10 bg-white/[0.03];
+}
+
+html:not(.dark) .info-card {
+  @apply border-slate-200 bg-white;
+}
+
+/* Library browse toolbar: a glass surface that sticks under the navbar on desktop. */
+.library-toolbar {
+  @apply rounded-[1.5rem] border p-4 shadow-card backdrop-blur-xl sm:p-5;
+}
+
+html.dark .library-toolbar {
+  @apply border-white/10 bg-slate-950/70 shadow-black/20;
+}
+
+html:not(.dark) .library-toolbar {
+  @apply border-slate-200 bg-white/85 shadow-slate-300/30;
+}
+
+html.dark .section-pill {
+  @apply border-white/10 bg-white/5 text-slate-300;
+}
+
+html:not(.dark) .section-pill {
+  @apply border-slate-300 bg-white text-slate-700;
+}
+
+html.dark .stat-card {
+  @apply border-white/10 bg-white/5;
+}
+
+html:not(.dark) .stat-card {
+  @apply border-slate-200 bg-white;
+}
+
+html.dark .stat-value {
+  @apply text-white;
+}
+
+html:not(.dark) .stat-value {
+  @apply text-slate-900;
+}
+
+html.dark .stat-label {
+  @apply text-slate-400;
+}
+
+html:not(.dark) .stat-label {
+  @apply text-slate-500;
+}
+
+/* ------------------------------------------------------------------ *
+ * Shared, theme-aware primitives.
+ *
+ * Everything below is defined once here so every page (auth, account,
+ * series detail, reader, library) renders from the same design language
+ * instead of each rolling its own gray-700 / bg-alt borders.
+ * `dark:` variants work because darkMode is 'class' and the theme is
+ * toggled on the <html> element.
+ * ------------------------------------------------------------------ */
+
+/* Page intro (pill + heading + copy) used on Library / Home / series */
+.page-intro {
+  @apply space-y-3;
+}
+.page-title {
+  @apply text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl;
+}
+.page-subtitle {
+  @apply max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300 sm:text-base;
+}
+
+/* Form field */
+.field-input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40 dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-brand-accent;
+}
+.field-label {
+  @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400;
+}
+
+/* Buttons */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-brand to-brand-accent px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand/20 transition hover:scale-[1.02] hover:shadow-brand/30 disabled:pointer-events-none disabled:opacity-50;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition disabled:pointer-events-none disabled:opacity-50;
+}
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition;
+}
+html.dark .btn-ghost {
+  @apply border-white/10 bg-white/5 text-slate-100 hover:bg-white/10;
+}
+html:not(.dark) .btn-ghost {
+  @apply border-slate-300 bg-white text-slate-800 hover:bg-slate-100;
+}
+html.dark .btn-danger {
+  @apply border-red-500/30 bg-red-500/10 text-red-200 hover:bg-red-500/20;
+}
+html:not(.dark) .btn-danger {
+  @apply border-red-300 bg-red-50 text-red-700 hover:bg-red-100;
+}
+
+/* Inline status banners (form errors / successes) */
+.alert {
+  @apply rounded-xl border px-3.5 py-2.5 text-sm;
+}
+.alert-error {
+  @apply border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-200;
+}
+.alert-success {
+  @apply border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200;
+}
+.alert-info {
+  @apply border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-200;
+}
+
+/* Small pill used for tags / status on series + cards */
+.chip {
+  @apply inline-flex items-center rounded-full border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200;
+}
+/* The "More tags" toggle: a chip that reads as a button and expands in place. */
+button.chip-toggle {
+  @apply cursor-pointer select-none gap-1.5 pr-2 transition hover:border-brand/40 hover:bg-brand/10 hover:text-brand dark:hover:bg-brand/15 dark:hover:text-brand-accent;
+}
+.chip-accent {
+  @apply inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-200;
+}
+
+/* Library toolbar filter pills. Active states are solid brand in both themes so
+ * the label stays readable (the old white-on-15%-brand state was invisible in
+ * light mode). */
+.filter-label {
+  @apply shrink-0 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500 sm:pt-2 dark:text-slate-400;
+}
+
+.filter-pill {
+  @apply inline-flex shrink-0 cursor-pointer select-none items-center justify-center rounded-full border px-3 py-1.5 text-xs font-medium transition;
+}
+
+/* Genres become a single swipeable row on phones; desktop wraps normally. */
+.filter-scroll {
+  scrollbar-width: none;
+}
+
+.filter-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+html.dark .filter-pill {
+  @apply border-white/10 bg-white/5 text-slate-300 hover:border-white/20 hover:bg-white/10 hover:text-white;
+}
+
+html:not(.dark) .filter-pill {
+  @apply border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900;
+}
+
+html.dark .filter-pill-active {
+  @apply border-brand bg-brand text-white shadow-sm shadow-brand/30 hover:border-brand hover:bg-brand-accent hover:text-white;
+}
+
+html:not(.dark) .filter-pill-active {
+  @apply border-brand bg-brand text-white shadow-sm shadow-brand/30 hover:border-brand hover:bg-brand-accent hover:text-white;
+}
+
+/* Series page chapter list: one card per chapter number, one row per upload */
+.chapter-group {
+  @apply overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5;
+}
+
+.chapter-group-title {
+  @apply border-b border-slate-100 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:border-white/5 dark:text-slate-400;
+}
+
+.chapter-group-subtitle {
+  @apply font-medium normal-case tracking-normal text-slate-400 dark:text-slate-500;
+}
+
+.chapter-row {
+  @apply flex w-full items-center gap-3 px-4 py-2.5 text-sm transition hover:bg-slate-50 dark:text-slate-100 dark:hover:bg-white/10;
+}
+
+/* Hairline between the uploads inside a card (not above the first one). */
+.chapter-group li:not(:first-child) .chapter-row {
+  @apply border-t border-slate-100 dark:border-white/5;
+}
+
+.chapter-row-link {
+  @apply flex min-w-0 flex-1 flex-wrap items-center gap-1.5;
+}
+
+/* The full-width "Show all chapters" / "Show latest 10 only" toggle */
+.chapter-show-all {
+  @apply flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-medium text-slate-600 transition hover:border-brand/40 hover:text-brand dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:border-brand/40 dark:hover:text-white;
+}
+
+/* Loading skeleton block */
+.skeleton {
+  @apply animate-pulse rounded-xl bg-slate-200 dark:bg-white/10;
+}
+
+/* Global focus visibility for keyboard users (nav links, toggles, etc.) */
+a:focus-visible,
+button:focus-visible {
+  @apply outline-none ring-2 ring-brand/50 ring-offset-2 ring-offset-transparent;
+}

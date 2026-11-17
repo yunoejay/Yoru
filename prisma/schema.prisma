@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  /// Handle/username: 3-30 letters, numbers or underscores.
+  name         String?
+  /// Free-form name shown in the UI; `name` stays the unique-ish handle.
+  displayName  String?
+  /// Short "about me" shown on the profile page.
+  bio          String?
+  location     String?
+  website      String?
+  /// Same-origin paths written by POST /api/auth/profile/image.
+  avatarUrl    String?
+  bannerUrl    String?
+  passwordHash String
+  verified     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  verificationCodes VerificationCode[]
+  resetTokens       PasswordResetToken[]
+  libraryEntries    LibraryEntry[]
+  chapterReads      ChapterRead[]
+}
+
+/// A series the reader filed into their personal bookmarks, with a reading status
+/// ("reading", "completed", "plan_to_read", ...). See lib/library-status.ts for
+/// the canonical status list and labels.
+///
+/// Backs /my-library, the status picker on series pages, the account
+/// "bookmarks" counter and the home "Updates for you" / "Bookmarks" rails.
+/// Keyed on the DB Series.id (a uuid), never the public slug, so it survives a
+/// slug change.
+///
+/// The table keeps its original `bookmarks` name: this model began life as a
+/// simple bookmark flag, and renaming the table would be a destructive
+/// migration for no functional gain. Existing rows pick up the default status.
+model LibraryEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  seriesId  String
+  /// One of LIBRARY_STATUSES in lib/library-status.ts. Stored as TEXT and
+  /// validated in the API layer, so adding a status never needs a Postgres
+  /// enum migration.
+  status    String   @default("plan_to_read")
+  createdAt DateTime @default(now())
+  /// Bumped whenever the status changes, which is what /my-library sorts by.
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, seriesId])
+  @@index([userId])
+  @@map("bookmarks")
+}
+
+/// A chapter the reader has finished, so the series page can show a checkbox
+/// and answer "where am I in this series".
+///
+/// Keyed on the chapter NUMBER rather than the Chapter row id, because a number
+/// can have one row per scanlator (Tower of God: Webtoon + Alpha). Progress is a
+/// property of the story position, not of one group's upload: marking ch. 12
+/// read stays read after switching scanlators. The trade-off is that every
+/// group's version of ch. 12 shares one checkbox, which is the intended
+/// behaviour here.
+model ChapterRead {
+  id        String   @id @default(uuid())
+  userId    String
+  seriesId  String
+  /// Matches Chapter.number (may be fractional, e.g. 12.5).
+  number    Float
+  readAt    DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, seriesId, number])
+  @@index([userId])
+  @@map("chapter_reads")
+}
+
+model VerificationCode {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+  usedAt    DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Content model
+//
+// Design rule: chapter PAGE URLS ARE NOT STORED. MangaDex guarantees an
+// at-home base URL for only ~15 minutes, and it serves a bogus image to any
+// hotlinking origin, so persisted page URLs would be both wrong and unusable.
+// We persist chapter IDENTITY (source + externalId) and resolve pages at read
+// time through /api/chapter/[id]/pages, which proxies them.
+//
+// `pageCache` on Chapter is a disposable warm cache, safe to delete anytime.
+// ---------------------------------------------------------------------------
+
+/// A content provider: the MangaDex API, an official publisher feed, or an API
+/// aggregator such as Atsumaru.
+model Source {
+  id       String          @id @default(uuid())
+  /// Adapter key; must match an entry in lib/sources/index.ts
+  slug     String          @unique
+  label    String
+  /// true = sanctioned API / official licensor, false = scraping (ToS risk)
+  isLegal  Boolean         @default(false)
+  listings SeriesListing[]
+
+  @@map("sources")
+}
+
+model Series {
+  id        String   @id @default(uuid())
+  title     String
+  cover     String
+  synopsis  String   @default("")
+  status    String   @default("ongoing")
+  author    String?
+  /// Primary genres — the short list shown inline on the series page.
+  tags      String[]
+  /// Longer tail (MangaDex theme/format/content tags) shown behind a
+  /// "More tags" toggle, because a manhwa's theme list can be very long.
+  extraTags String[] @default([])
+  /// Slug used in /series/[id] URLs.
+  slug      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chapters Chapter[]
+  listings SeriesListing[]
+  libraryEntries LibraryEntry[]
+  chapterReads ChapterRead[]
+
+  @@index([title])
+  @@map("series")
+}
+
+///
+/// One row per (source, title) pair. This is what makes "the same manhwa from
+/// several different scanlators" representable at all - a static array cannot
+/// express it, which is the real reason a database is needed here.
+///
+model SeriesListing {
+  id                String   @id @default(uuid())
+  seriesId          String
+  sourceId          String
+  /// ID upstream: a MangaDex manga UUID, or an atsu.moe manga id.
+  externalId        String
+  /// Primary scanlator label, e.g. "Tapas" or "Alpha".
+  groupName         String?
+  /// True when the upstream group is a licensed/official publisher.
+  isOfficial        Boolean  @default(false)
+  /// Incremental-sync cursor: highest chapter number seen on the last sync.
+  lastChapterNumber Float?
+  syncedAt          DateTime @default(now())
+
+  series Series @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Restrict)
+
+  chapters Chapter[]
+
+  @@unique([sourceId, externalId])
+  @@index([seriesId])
+  @@map("series_listings")
+}
+
+model Chapter {
+  id               String    @id @default(uuid())
+  seriesId         String
+  listingId        String
+  /// Upstream chapter UUID - resolved to pages on every read.
+  externalId       String
+  number           Float
+  volume           Int?
+  title            String?
+  /// Which scanlator produced THIS chapter, so the UI can credit them.
+  groupName        String?
+  groupId          String?
+  isOfficial       Boolean   @default(false)
+  language         String    @default("en")
+  /// Count only - the URLs themselves expire.
+  pageCount        Int       @default(0)
+  /// Set when the chapter links out to the official reader (no hosted files).
+  externalUrl      String?
+  publishedAt      DateTime  @default(now())
+  /// Disposable warm cache of resolved page URLs. Never authoritative.
+  pageCache        Json?
+  pageCacheExpires DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  series  Series        @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  listing SeriesListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, externalId])
+  @@index([seriesId, number])
+  @@map("chapters")
+}
+
+
