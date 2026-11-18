@@ -53,8 +53,8 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
 - **Read tracking** (`ChapterRead`): a checkbox on every chapter, a progress bar
   and a "Continue Ch. N" hero button. Progress is keyed on the chapter *number*,
   so it survives switching scanlators; signed-in readers sync through their
-  account, guests are saved in this browser's localStorage. The reader footer
-  has the same "mark read" checkbox.
+  account, guests are saved in this browser's localStorage. The reader's
+  floating settings panel has the same "mark read" checkbox.
 - **Personal bookmarks**: every series carries a reading status — Reading,
   Rereading, Plan to read, Completed, On hold or Dropped — picked from the menu
   on its series page. Opening **any** chapter files the series as Reading on its
@@ -81,12 +81,15 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
   note below before running on a serverless host.
 - Server-side **image proxy** - required because MangaDex blocks hotlinking
 - Prisma + Postgres for series/chapter metadata (page *URLs are never stored*)
-- **Vertical webtoon scroll reader**: the whole chapter stacks in one column, so
-  reading is scrolling, not paging. Prev/Next (and Left/Right arrows) move between
-  *chapters*; Up/Down/Space still scroll. Reaching the bottom of a chapter **no
-  longer auto-advances** - the fixed footer bar's Prev/Next are the only forward
-  path, so the strip never yanks you into a chapter you did not choose. An optional
-  **"Auto" toggle** in that bar scrolls down one page every 5 seconds and stops at
+- **Vertical webtoon scroll reader**: the whole chapter stacks in one centered
+  column on a full-black immersive canvas — the site header and footer step out
+  of the way while a chapter is open. Prev/Next (and Left/Right arrows) move
+  between *chapters*; Up/Down/Space still scroll. The floating control rail on
+  the **left** opens a settings panel with Prev/Next, page/progress, auto-scroll,
+  mark read, low data and fullscreen. Reaching the bottom of a chapter **no
+  longer auto-advances** - the panel's Prev/Next are the only forward path, so
+  the strip never yanks you into a chapter you did not choose. The
+  **"Auto-scroll" toggle** scrolls down one page every 5 seconds and stops at
   the last page (it never flips chapters, and a manual scroll re-times it so it
   never fights you). Pages lazy-load, because each image is
   proxied at ~4 req/s upstream, and the next chapter's page list is prefetched so

@@ -39,6 +39,40 @@ body {
     radial-gradient(circle at bottom right, var(--glow-secondary), transparent 24%);
 }
 
+/* Immersive reader: hide the site chrome and hand the whole viewport to the
+ * chapter. `:has()` covers the first paint (the marker is in the SSR HTML);
+ * `body.reader-mode` is the runtime fallback the Reader component toggles. */
+html body:has(.reader-immersive),
+html body.reader-mode {
+  background: #000;
+  color-scheme: dark;
+  scrollbar-color: #3f3f46 #000;
+}
+
+body:has(.reader-immersive)::-webkit-scrollbar-track,
+body.reader-mode::-webkit-scrollbar-track {
+  background: #000;
+}
+
+body:has(.reader-immersive)::-webkit-scrollbar-thumb,
+body.reader-mode::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+
+body:has(.reader-immersive) header,
+body.reader-mode header,
+body:has(.reader-immersive) footer,
+body.reader-mode footer {
+  display: none;
+}
+
+body:has(.reader-immersive) main,
+body.reader-mode main {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
 /* Card styling for both modes */
 html.dark .card-surface {
   @apply bg-bg-alt border-slate-800/60;

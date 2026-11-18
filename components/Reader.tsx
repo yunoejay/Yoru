@@ -1,6 +1,5 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReaderControls, { type ChapterRef } from './ReaderControls';
 import { useReadProgress } from './useReadProgress';
@@ -150,6 +149,14 @@ export default function Reader({
     markSeriesReading(seriesId);
   }, [chapterId, isSignedIn, seriesId]);
 
+  // Immersive reader: hide the site chrome while this page is mounted. The
+  // :has(.reader-immersive) rules in globals.css cover the first paint; this
+  // class is the runtime fallback and is removed when the reader unmounts.
+  useEffect(() => {
+    document.body.classList.add('reader-mode');
+    return () => document.body.classList.remove('reader-mode');
+  }, []);
+
   // Keep the ref the auto-play timer reads pointed at the page under the anchor,
   // whether it changed from a scroll or an auto-play step.
   useEffect(() => {
@@ -287,53 +294,41 @@ export default function Reader({
   const total = pages.length;
 
   return (
-    <div className="pb-28">
-      {/* Breadcrumb + back-to-series affordance. */}
-      <div className="mx-auto mb-4 flex max-w-3xl items-center justify-between gap-3">
-        <Link href={`/series/${seriesId}`} className="btn-ghost !px-3 !py-1.5 text-xs">
-          ← {seriesTitle}
-        </Link>
-        {scanlator || creditGroup ? (
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            Scanlation:{' '}
-            <span className="font-medium text-slate-700 dark:text-slate-200">{scanlator ?? creditGroup}</span>
-            {sourceName ? ` via ${sourceName}` : ''}
-          </span>
-        ) : null}
-      </div>
-
-      <div className="mx-auto mb-6 max-w-3xl">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">{heading}</h1>
-      </div>
-
+    <div className="reader-immersive min-h-screen bg-black text-slate-100">
       {loading ? (
-        <div className="mx-auto flex max-w-3xl flex-col items-center gap-4">
-          <div className="skeleton h-72 w-full" />
-          <div className="skeleton h-72 w-full opacity-70" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">Loading chapter…</p>
+        <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center gap-4 px-4">
+          <div className="h-72 w-full animate-pulse rounded-xl bg-white/5" />
+          <div className="h-72 w-full animate-pulse rounded-xl bg-white/5 opacity-70" />
+          <p className="text-sm text-slate-400">Loading chapter…</p>
         </div>
       ) : null}
 
       {error ? (
-        <div className="alert alert-error mx-auto max-w-3xl space-y-2">
-          <p className="text-sm">{error}</p>
-          {linkOutUrl ? (
-            <a href={linkOutUrl} target="_blank" rel="noreferrer" className="inline-block text-sm font-medium underline">
-              Read this chapter at the official publisher →
-            </a>
-          ) : null}
+        <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-4">
+          <div className="w-full rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-4 text-sm text-red-200">
+            <p>{error}</p>
+            {linkOutUrl ? (
+              <a
+                href={linkOutUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-2 inline-block font-medium underline"
+              >
+                Read this chapter at the official publisher →
+              </a>
+            ) : null}
+          </div>
         </div>
       ) : null}
 
       {!loading && !error && total === 0 ? (
-        <p className="mx-auto max-w-3xl text-sm text-slate-500 dark:text-slate-400">No pages for this chapter.</p>
+        <div className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-4">
+          <p className="text-sm text-slate-400">No pages for this chapter.</p>
+        </div>
       ) : null}
 
       {total ? (
-        <div
-          ref={stripRef}
-          className="mx-auto flex w-full max-w-3xl flex-col items-stretch overflow-hidden rounded shadow"
-        >
+        <div ref={stripRef} className="mx-auto flex w-full max-w-3xl flex-col items-stretch">
           {pages.map((src, position) => (
             <img
               key={`${chapterId}-${position}`}
@@ -351,13 +346,20 @@ export default function Reader({
       ) : null}
 
       {sourceName ? (
-        <p className="mx-auto mt-6 max-w-3xl text-[11px] text-slate-500">
+        <p className="mx-auto mt-6 max-w-3xl px-4 pb-10 text-center text-[11px] text-slate-500">
           Content provided by {sourceName} and the credited scanlation group. Removal requests from groups
           are honoured.
         </p>
       ) : null}
 
       <ReaderControls
+        seriesId={seriesId}
+        seriesTitle={seriesTitle}
+        heading={heading}
+        chapterNumber={chapterNumber}
+        scanlator={scanlator}
+        creditGroup={creditGroup}
+        sourceName={sourceName}
         currentPage={currentPage}
         total={total}
         progress={progress}
