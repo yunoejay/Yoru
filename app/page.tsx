@@ -28,9 +28,7 @@ const RAIL_LIMIT = 14;
 const LIBRARY_VIEW_ALL = '/library';
 
 interface Rail {
-  pill: string;
   title: string;
-  description?: string;
   series: SeriesCardData[];
   emptyMessage?: string;
   /** Defaults to the full catalog; personal rails point at /my-library. */
@@ -59,58 +57,42 @@ export default async function HomePage() {
   const rails: Rail[] = user
     ? [
         {
-          pill: 'For you',
           title: 'Updates for you',
-          description:
-            'Fresh chapters from the series in your bookmarks, newest first — completed titles stay off this rail.',
           series: pickUpdatesForYou(libraryEntries, RAIL_LIMIT),
           emptyMessage:
             'No fresh chapters from your bookmarks',
           viewAllHref: '/my-library',
         },
         {
-          pill: 'Saved',
           title: 'Bookmarks',
-          description: 'Everything you filed, with its reading status.',
           series: toSeriesCardDataList(librarySeries),
           emptyMessage: 'Your bookmarks are empty — add a series from its page to get started.',
           viewAllHref: '/my-library',
         },
         {
-          pill: 'Trending',
           title: 'Hot Updates',
-          description: 'The titles publishing the most chapters right now.',
           series: hotSeries,
         },
         {
-          pill: 'New chapters',
           title: 'Recently Updated',
           series: pickLatestUpdates(series, RAIL_LIMIT),
         },
         {
-          pill: 'All time',
           title: 'Popular',
-          description: 'The deepest catalogs on Yoru.',
           series: pickPopular(series, RAIL_LIMIT),
         },
       ]
     : [
         {
-          pill: 'Hot right now',
           title: 'Trending Comics',
-          description: 'Standout series our readers keep coming back to.',
           series: pickTrending(series, RAIL_LIMIT),
         },
         {
-          pill: 'Fan favorites',
           title: 'Popular',
-          description: 'The biggest, most-covered series in the catalog.',
           series: pickPopular(series, RAIL_LIMIT),
         },
         {
-          pill: 'Just dropped',
           title: 'Latest Updates',
-          description: 'The newest chapters across everything we track.',
           series: pickLatestUpdates(series, RAIL_LIMIT),
         },
       ];
@@ -127,14 +109,10 @@ export default async function HomePage() {
           <div className="pointer-events-none absolute inset-0 z-10 bg-gradient-to-b from-white/85 via-white/25 to-white/85 dark:from-slate-950/85 dark:via-slate-950/25 dark:to-slate-950/85" />
           <div className="relative z-20 flex h-full flex-col justify-center px-6 py-10 sm:px-8 lg:px-10 lg:py-12">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-2xl space-y-4">
-                <span className="section-pill">Yoru</span>
+              <div className="max-w-2xl">
                 <h1 className="text-4xl font-semibold leading-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl">
                   A sharper home for manhwa, manhua, and manga — and your next binge read.
                 </h1>
-                <p className="max-w-xl text-sm leading-7 text-slate-700 dark:text-slate-300 sm:text-base">
-                  Explore standout Korean manhwa, Chinese manhua, and Japanese manga — track the latest chapters and jump back into your bookmarks with a cleaner, more cinematic interface.
-                </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[420px]">
                 <div className="stat-card">
@@ -158,9 +136,7 @@ export default async function HomePage() {
       {rails.map((rail) => (
         <CategorySection
           key={rail.title}
-          pill={rail.pill}
           title={rail.title}
-          description={rail.description}
           series={rail.series}
           viewAllHref={rail.viewAllHref ?? LIBRARY_VIEW_ALL}
           emptyMessage={rail.emptyMessage}

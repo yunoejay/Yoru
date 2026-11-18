@@ -3,10 +3,7 @@ import SeriesCard from './SeriesCard';
 import type { SeriesCardData } from '../lib/series-card';
 
 interface CategorySectionProps {
-  /** Display pill label above the title, e.g. "Popular". */
-  pill?: string;
   title: string;
-  description?: string;
   series: SeriesCardData[];
   /** Optional "View all →" target (usually /library). */
   viewAllHref?: string;
@@ -20,9 +17,7 @@ interface CategorySectionProps {
  * — horizontal scroll is plain CSS, so it stays fast and works without hydration.
  */
 export default function CategorySection({
-  pill,
   title,
-  description,
   series,
   viewAllHref,
   emptyMessage,
@@ -32,13 +27,7 @@ export default function CategorySection({
   return (
     <section className="space-y-4" aria-label={title}>
       <div className="flex items-end justify-between gap-4">
-        <div>
-          {pill ? <p className="section-pill mb-2">{pill}</p> : null}
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">{title}</h2>
-          {description ? (
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{description}</p>
-          ) : null}
-        </div>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white sm:text-2xl">{title}</h2>
         {viewAllHref ? (
           <Link
             href={viewAllHref}
