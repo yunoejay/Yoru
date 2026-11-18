@@ -56,3 +56,22 @@ export function normalizeLibraryStatus(value: string): LibraryStatus {
 export function libraryStatusLabel(value: string): string {
   return LIBRARY_STATUS_LABELS[normalizeLibraryStatus(value)];
 }
+
+/**
+ * The status a series should carry after the reader opens one of its chapters.
+ *
+ * Opening any chapter - chapter 1, a random chapter, a re-read - proves the
+ * reader is reading that series, so a passive or finished status (`plan_to_read`,
+ * `on_hold`, `dropped`, `completed`) moves to `reading`, and a series that was
+ * never filed is added as `reading`. That is what shelves a title the reader
+ * already read elsewhere the moment they open a chapter here, and what keeps
+ * "currently reading" honest when they return to a caught-up series.
+ *
+ * The two active-reading statuses are kept as they are: `reading` is already
+ * right, and `rereading` is a deliberate, more specific choice that should
+ * survive opening a chapter. Returns null when no write is needed.
+ */
+export function statusAfterOpeningChapter(current: LibraryStatus | null): LibraryStatus | null {
+  if (current === 'reading' || current === 'rereading') return null;
+  return 'reading';
+}

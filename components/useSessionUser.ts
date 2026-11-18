@@ -19,6 +19,27 @@ export const AUTH_CHANGED_EVENT = 'yoru:auth-changed';
 
 export type SessionUser = PublicProfile;
 
+/**
+ * The navbar and the theme provider both ask for the session on mount. Sharing
+ * the in-flight request keeps that to a single `/api/auth/me` call instead of
+ * two.
+ */
+let inflight: Promise<SessionUser | null> | null = null;
+
+function requestUser(): Promise<SessionUser | null> {
+  if (!inflight) {
+    inflight = fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => res.json() as Promise<{ user?: SessionUser | null }>)
+      .then((data) => data.user ?? null)
+      .catch(() => null)
+      .finally(() => {
+        inflight = null;
+      });
+  }
+
+  return inflight;
+}
+
 export function notifyAuthChanged(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
@@ -34,15 +55,9 @@ export function useSessionUser(): {
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/me', { cache: 'no-store' });
-      const data = (await res.json()) as { user?: SessionUser | null };
-      setUser(data.user ?? null);
-    } catch {
-      setUser(null);
-    } finally {
-      setLoaded(true);
-    }
+    const next = await requestUser();
+    setUser(next);
+    setLoaded(true);
   }, []);
 
   useEffect(() => {

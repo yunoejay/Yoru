@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { countReadChapters } from '@/lib/read-progress-core';
+import { markSeriesReading } from '@/lib/reading-status-client';
 import { useReadProgress } from './useReadProgress';
 
 /** One upload of a chapter — a scanlator/publisher row inside a group. */
@@ -141,6 +142,7 @@ export default function ChapterList({
         key={group.number}
         seriesId={seriesId}
         group={group}
+        isSignedIn={isSignedIn}
         read={isRead(group.number)}
         readPending={pending}
         onToggleRead={toggleRead}
@@ -169,7 +171,7 @@ export default function ChapterList({
       </div>
 
       <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-        <span className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-gray-800" aria-hidden>
+        <span className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800" aria-hidden>
           <span
             className="block h-full bg-gradient-to-r from-brand to-brand-accent transition-[width] duration-150"
             style={{ width: `${percent}%` }}
@@ -234,12 +236,14 @@ export default function ChapterList({
 function ChapterGroupCard({
   seriesId,
   group,
+  isSignedIn,
   read,
   readPending,
   onToggleRead,
 }: {
   seriesId: string;
   group: ChapterGroupRow;
+  isSignedIn: boolean;
   read: boolean;
   readPending: boolean;
   onToggleRead: (number: number, read: boolean) => Promise<void>;
@@ -257,6 +261,7 @@ function ChapterGroupCard({
               seriesId={seriesId}
               number={group.number}
               row={row}
+              isSignedIn={isSignedIn}
               read={read}
               readPending={readPending}
               onToggleRead={onToggleRead}
@@ -276,6 +281,7 @@ function ChapterListRow({
   seriesId,
   number,
   row,
+  isSignedIn,
   read,
   readPending,
   onToggleRead,
@@ -283,11 +289,22 @@ function ChapterListRow({
   seriesId: string;
   number: number;
   row: ChapterRow;
+  isSignedIn: boolean;
   read: boolean;
   readPending: boolean;
   onToggleRead: (number: number, read: boolean) => Promise<void>;
 }) {
   const isLinkOut = Boolean(row.linkOutUrl) && !row.pageCount;
+
+  /**
+   * A link-out chapter opens on the publisher's site instead of our reader, so
+   * the reader's "chapter opened -> Reading" write never fires for it. Treat the
+   * click as the same signal here: signed-in readers get the series shelved as
+   * Reading just like they would after opening one of our own chapters.
+   */
+  const onLinkOutClick = () => {
+    if (isSignedIn) markSeriesReading(seriesId);
+  };
 
   const label = (
     <>
@@ -317,6 +334,7 @@ function ChapterListRow({
           target="_blank"
           rel="noreferrer"
           className="chapter-row-link"
+          onClick={onLinkOutClick}
         >
           {label}
         </a>

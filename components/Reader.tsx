@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import ReaderControls, { type ChapterRef } from './ReaderControls';
 import { useReadProgress } from './useReadProgress';
+import { markSeriesReading } from '@/lib/reading-status-client';
 
 interface PagesResponse {
   total: number;
@@ -71,6 +72,8 @@ export default function Reader({
 
   const stripRef = useRef<HTMLDivElement>(null);
   const prefetchedRef = useRef<string | null>(null);
+  // Guards the "opened a chapter" write against StrictMode's double effect.
+  const readingMarkedRef = useRef<string | null>(null);
   // Mirror of currentPage for the auto-play timer, which must read the live page
   // without re-subscribing on every scroll. Kept in sync by an effect below.
   const currentPageRef = useRef(1);
@@ -132,6 +135,20 @@ export default function Reader({
     setCurrentPage(1);
     currentPageRef.current = 1;
   }, [chapterId]);
+
+  // Opening a chapter means the reader is reading the series, so file it as
+  // "Reading" (the API keeps an existing reading/rereading status untouched).
+  // This is what shelves a title the reader already read on another site the
+  // moment they open chapter 1 - or any other chapter. One POST per chapter
+  // view, so Prev/Next navigation keeps the status current; guests skip it
+  // because a shelf status belongs to an account.
+  useEffect(() => {
+    if (!isSignedIn) return;
+    const key = `${seriesId}:${chapterId}`;
+    if (readingMarkedRef.current === key) return;
+    readingMarkedRef.current = key;
+    markSeriesReading(seriesId);
+  }, [chapterId, isSignedIn, seriesId]);
 
   // Keep the ref the auto-play timer reads pointed at the page under the anchor,
   // whether it changed from a scroll or an auto-play step.

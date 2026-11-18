@@ -15,7 +15,12 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
 
 ## Features
 - Next.js 16 App Router
-- Dark theme with Tailwind
+- **Thirteen VS Code–style themes**: Yoru Dark (default), Midnight, Nord,
+  Dracula, Solarized Dark, Tokyo Night, Catppuccin Mocha and Gruvbox Dark, plus
+  Yoru Light, Solarized Light, Catppuccin Latte, One Light and Rosé Pine Dawn.
+  The picker sits in the avatar menu — hover/focus/click opens a flyout on
+  desktop and expands inline on phones — and the choice is saved per reader and
+  applied before first paint, so there is no flash. Guests always get Yoru Dark.
 - Multi-source content layer (`lib/sources/`) behind one `ScanlationSource` interface
 - **Correct format labels**: manhwa (Korean), manhua (Chinese) and manga
   (Japanese) are tagged from the source's own `type` instead of folding every
@@ -52,11 +57,17 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
   has the same "mark read" checkbox.
 - **Personal bookmarks**: every series carries a reading status — Reading,
   Rereading, Plan to read, Completed, On hold or Dropped — picked from the menu
-  on its series page. The avatar menu's **Bookmarks** page filters by status
-  with per-status counts, and each cover keeps the same menu so a title can be
-  re-filed or removed without leaving the page. Entries reuse the `bookmarks`
-  table (with a `status` column and `updatedAt` ordering); the canonical list
-  lives in `lib/library-status.ts`.
+  on its series page. Opening **any** chapter files the series as Reading on its
+  own (a deliberate Rereading stays put), so a title you already read on another
+  site shelves itself the moment you open chapter 1 or a random chapter. The
+  navbar's **Bookmarks** link (next to the avatar)
+  filters by status with per-status counts and has its own search box (title,
+  author, genre, synopsis or scanlator) plus a sort control — Recently changed,
+  Recently added, Oldest added or Title A–Z — so a large shelf stays navigable.
+  Each cover keeps the same menu
+  so a title can be re-filed or removed without leaving the page. Entries reuse
+  the `bookmarks` table (with a `status` column and `updatedAt` ordering); the
+  canonical list lives in `lib/library-status.ts`.
 - **Personal home rails**: the home page's **Updates for you** rail mixes the
   newest chapter activity from your bookmarks, but leaves out anything you
   filed as **Completed** and anything the source itself lists as completed —
@@ -81,7 +92,7 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
   proxied at ~4 req/s upstream, and the next chapter's page list is prefetched so
   flipping chapters is instant. A "low data" switch loads MangaDex's compressed
   variant (measured 144 KB vs 1.66 MB for the same page)
-- Simple theme toggle
+- Theme picker in the avatar menu (per-reader, applied before the first paint)
 - Email-verified accounts with username + password login, password reset, profile editing
 - Bundled demo data as a graceful fallback when the database is not configured,
   so the site never renders blank
@@ -90,11 +101,72 @@ pages are proxied through rate-limited MangaDex@Home nodes and load slower; set
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in DATABASE_URL
+npx vercel link    # log in + choose the yoru project (one time)
+npm run env:pull   # pulls the shared Development env (see below)
 npm run dev
 ```
 
+Without Vercel access, copy the template instead and fill in a local
+`DATABASE_URL`:
+
+```bash
+cp .env.example .env.local
+```
+
 Open http://localhost:3000.
+
+### Environment variables for developers
+
+Real values never live in git. `.env.local` is gitignored; `.env.example` only
+documents the keys. The shared **development** values live in the Vercel
+project's Development environment and are pulled with the Vercel CLI.
+
+**One-time project setup (owner):**
+
+1. Create a **separate** Supabase project (or Neon database) for development.
+   Keep production on its own project.
+2. In Vercel → Project → Settings → Environment Variables:
+
+   | Key | Development | Production / Preview |
+   |---|---|---|
+   | `DATABASE_URL` | **Config** | **Secret** |
+   | `AUTH_JWT_SECRET` | **Config** (dev-only value) | **Secret** |
+   | `APP_URL` | **Config** | **Config** |
+   | `SOURCE_USER_AGENT`, `SOURCE_RATE_PER_SEC`, `SOURCE_BURST`, `MANGADEX_ENABLED`, `ATSUMARU_ENABLED` | **Config** | **Config** |
+   | `SMTP_*` (optional) | omit | **Secret** |
+
+   Development defaults to **Config** and Production/Preview to **Secret**. Do
+   **not** mark the Development values Secret: `vercel env pull` cannot read
+   Secret values back and writes a placeholder instead.
+3. Invite the other developer to the Vercel project (Settings → Members). They
+   never need the raw keys.
+
+**Developer onboarding:**
+
+```bash
+npm install
+npx vercel login
+npx vercel link          # choose the yoru project
+npm run env:pull         # writes .env.local from the Development environment
+npm run check:env        # confirms the required keys are present
+npx prisma migrate dev
+npm run dev
+```
+
+- `vercel env pull` merges into an existing `.env.local`: keys you added locally
+  that are not in Vercel are kept.
+- Production/Preview Secrets are write-only. They are injected into deployments
+  and never pulled to a laptop.
+- Supabase API keys (anon / publishable / service-role) are not used: Prisma
+  connects straight to Postgres, so `DATABASE_URL` is the only Supabase value
+  the app reads.
+- **No Vercel access?** Use local Postgres (Database setup → Option A), copy
+  `.env.example` to `.env.local`, and set `DATABASE_URL`. External contributors
+  should never receive production credentials.
+- **Leaked or rotated key?** Rotate it at the provider first (Supabase, Vercel,
+  SMTP), update the Vercel value, then re-run `npm run env:pull`. If it was ever
+  committed, removing it from the latest commit is not enough: purge the git
+  history, force-push, and assume every existing clone still has the old value.
 
 ### Demo / test account
 
@@ -112,6 +184,60 @@ handle is matched case-insensitively. Do not confuse the handle with the display
 name (`demoreader`), which is only a label on the profile. This row lives in the
 local Postgres database only — on a fresh database, create an account through the
 Register link on the login page instead.
+
+## Themes
+
+The app ships thirteen palettes and lets a signed-in reader pick one from the
+avatar menu (**Theme** row). Guests always get Yoru Dark.
+
+| Theme | Mode | Canvas | Accent |
+|---|---|---|---|
+| Yoru Dark (default) | dark | `#0f1115` | `#6366f1` → `#8b5cf6` |
+| Midnight | dark | `#000000` | `#5b7cfa` → `#8b7cf6` |
+| Nord | dark | `#2E3440` | `#46618C` → `#5E81AC` |
+| Dracula | dark | `#282A36` | `#7A57D1` → `#8B6BE0` |
+| Solarized Dark | dark | `#002B36` | `#1A6FAF` → `#268BD2` |
+| Tokyo Night | dark | `#1A1B26` | `#4463B0` → `#4A6BB8` |
+| Catppuccin Mocha | dark | `#1E1E2E` | `#6F4FB0` → `#7C5CBF` |
+| Gruvbox Dark | dark | `#282828` | `#C2570E` → `#D65D0E` |
+| Yoru Light | light | `#ffffff` | `#6366f1` → `#8b5cf6` |
+| Solarized Light | light | `#FDF6E3` | `#1A6FAF` → `#268BD2` |
+| Catppuccin Latte | light | `#EFF1F5` | `#8839EF` → `#9A4FF2` |
+| One Light | light | `#FAFAFA` | `#4078F2` → `#5285F3` |
+| Rosé Pine Dawn | light | `#FAF4ED` | `#907AA9` → `#9A82B0` |
+
+### How the theming works
+
+1. **`lib/themes.ts`** is the single source of truth: each theme is one object
+   with an 11-step `slate` ramp (50 → 950), `white`/`black`, `brand`/`brand-accent`,
+   canvas + raised surface, card shadow, body-glow stops and scrollbar colours.
+2. **`scripts/build-themes.ts`** turns those values into CSS custom properties in
+   **`app/themes.generated.css`** (`[data-theme="nord"] { --slate-950: 35 40 49; … }`).
+   `npm run themes:build` regenerates it; `predev`/`prebuild` do it automatically
+   and `npm run themes:check` fails when the committed CSS is stale.
+3. **`tailwind.config.js`** points `white`, `black`, `slate-*`, `brand` and `bg`
+   at those variables, with `rgb(var(--token) / <alpha-value>)` so opacity
+   modifiers (`bg-white/10`, `bg-slate-950/70`) still work. That is why the
+   several hundred existing `dark:` utilities repaint per theme without a single
+   component change — the `dark` class (toggled per theme mode) still decides
+   which side of each pair applies.
+4. **`lib/theme-store.ts`** owns persistence: `localStorage` key
+   `yoru:theme:<userId>` (per reader), a non-httpOnly `yoru_theme` cookie hint
+   for the pre-paint script, cross-tab `storage` sync, and the OS
+   `prefers-color-scheme` listener used by **Follow system**.
+5. **`ThemeProvider`** + the inline `THEME_BOOTSTRAP_SCRIPT` in `app/layout.tsx`
+   apply the theme before first paint. Guests and stale cookies fall back to
+   Yoru Dark.
+
+### Adding a theme
+
+1. Add one object to `THEMES` in `lib/themes.ts` (keep the ramp ordered
+   light → dark; `slate-950` is also used as the dark overlay on cover art).
+2. `npm run themes:build` and `npm run check:themes` (WCAG audit of body text,
+   muted text and button labels — 4.5:1 / 3:1 thresholds).
+3. Check it in the browser: avatar menu → Theme → hover the row, then compare
+   the home, series, chapter list and reader pages in both desktop and phone
+   widths.
 
 ## Loading real content
 
@@ -272,6 +398,8 @@ Swap the write for S3/R2/uploads before deploying there, and ignore
 |---|---|
 | `npm run dev` | Start the dev server |
 | `npm run build` / `start` | Production build / serve |
+| `npm run env:pull` | Pull Development env vars from the linked Vercel project into `.env.local` |
+| `npm run check:env` | Assert required env keys are present (values are never printed) |
 | `npm run import:mangadex -- "Title" [--db]` | Search + optional import |
 | `npm run import:atsumaru -- "Title" [--db]` | Atsumaru (MangaBaka API) - fast, non-MangaDex, on by default |
 | `npm run migrate:atsumaru [-- --apply]` | Re-sync another source's series onto Atsumaru, then delete the old rows |
@@ -279,16 +407,21 @@ Swap the write for S3/R2/uploads before deploying there, and ignore
 | `npm run backfill:formats [-- --dry]` | Re-tag imported series with its real format (manhwa / manhua / manga) |
 | `npm run scanlators ["filter"]` | Per-series scanlator coverage + which group the reading order follows |
 | `npm run check:read-progress` | Assert the "next unread chapter" helpers (no DB needed) |
+| `npm run themes:build` | Regenerate `app/themes.generated.css` from `lib/themes.ts` (runs automatically before `dev` / `build`) |
+| `npm run themes:check` | Fail when the generated theme CSS is stale |
+| `npm run check:themes` | WCAG contrast audit for every palette |
 
 ## Folder structure
 
 ```
-app/                 Next.js App Router pages and API routes
+app/                 Next.js App Router pages and API routes (+ themes.generated.css)
   api/chapter/[id]/  Resolve a chapter's pages at read time
   api/image/         Same-origin proxy for upstream page images
 components/          UI, including the client-side Reader
 lib/
   sources/           ScanlationSource adapters (mangadex, atsumaru) + registry
+  themes.ts          Palette registry (theme ids, ramps, pre-paint script)
+  theme-store.ts     Client theme store: persistence, cookie hint, cross-tab sync
   content.ts         DB-first reads with demo fallback
   sync.ts            Import / incremental re-sync
   image-proxy.ts     Proxy URL encoding + SSRF allowlist

@@ -4,7 +4,9 @@
 
 :root {
   --radius: 18px;
-  color-scheme: dark light;
+  /* Yoru Dark is the server-rendered default. The pre-paint bootstrap script
+     and ThemeProvider set `color-scheme` to match the active theme. */
+  color-scheme: dark;
 }
 
 html {
@@ -17,7 +19,7 @@ html.dark {
 }
 
 html.dark body {
-  @apply bg-bg text-gray-100;
+  @apply bg-bg text-slate-100;
 }
 
 /* Light Mode */
@@ -26,63 +28,51 @@ html:not(.dark) {
 }
 
 html:not(.dark) body {
-  @apply bg-white text-gray-900;
+  @apply bg-white text-slate-900;
 }
 
 body {
   @apply min-h-screen font-sans antialiased transition-colors duration-300;
+  /* Both stops come from the active theme (see lib/themes.ts). */
   background-image:
-    radial-gradient(circle at top, rgba(99, 102, 241, 0.14), transparent 26%),
-    radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.12), transparent 24%);
+    radial-gradient(circle at top, var(--glow-primary), transparent 26%),
+    radial-gradient(circle at bottom right, var(--glow-secondary), transparent 24%);
 }
 
 /* Card styling for both modes */
 html.dark .card-surface {
-  @apply bg-bg-alt border-gray-800/60;
+  @apply bg-bg-alt border-slate-800/60;
 }
 
 html:not(.dark) .card-surface {
-  @apply bg-gray-50 border-gray-200;
+  @apply bg-slate-50 border-slate-200;
 }
 
 /* Navbar styling */
 html.dark header {
-  @apply border-gray-800/60 bg-bg/80;
+  @apply border-slate-800/60 bg-bg/80;
 }
 
 html:not(.dark) header {
-  @apply border-gray-200 bg-white/80;
+  @apply border-slate-200 bg-white/80;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling — the colours come from the active theme. */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
-html.dark ::-webkit-scrollbar-track {
-  background: #101317;
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
 }
 
-html:not(.dark) ::-webkit-scrollbar-track {
-  background: #f5f5f5;
-}
-
-html.dark ::-webkit-scrollbar-thumb {
-  background: #2a313b;
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
   border-radius: 10px;
 }
 
-html.dark ::-webkit-scrollbar-thumb:hover {
-  background: #3b4654;
-}
-
-html:not(.dark) ::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
-  border-radius: 10px;
-}
-
-html:not(.dark) ::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Utility */

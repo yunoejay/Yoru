@@ -19,6 +19,7 @@ import prisma from './prisma';
 import { toSeriesView, type SeriesView } from './content';
 import {
   normalizeLibraryStatus,
+  statusAfterOpeningChapter,
   type LibraryStatus,
 } from './library-status';
 
@@ -111,6 +112,50 @@ export async function setLibraryStatus(
     return { status };
   } catch {
     return { error: 'Could not update your bookmarks.' };
+  }
+}
+
+/**
+ * File the series as `reading` because the reader opened one of its chapters.
+ *
+ * This is the automatic counterpart to the status picker: any chapter open -
+ * chapter 1 after importing progress from another site, a random chapter, a
+ * re-read - shelves the title as "Reading" so the bookmarks rails and
+ * /my-library reflect what is actually being read. `statusAfterOpeningChapter`
+ * owns the transition rules; an entry already in `reading`/`rereading` is left
+ * untouched, so repeated chapter opens cost one SELECT and never bump
+ * `updatedAt` (which would re-sort /my-library).
+ *
+ * Returns the resulting status, or an error when the series is unknown/the DB
+ * is down. The reader treats the call as a background side effect.
+ */
+export async function markSeriesReading(
+  userId: string,
+  publicSeriesId: string,
+): Promise<{ status: LibraryStatus } | { error: string }> {
+  const dbId = await resolveSeriesDbId(publicSeriesId);
+  if (!dbId) return { error: 'Series not found.' };
+
+  try {
+    const existing = await prisma.libraryEntry.findUnique({
+      where: { userId_seriesId: { userId, seriesId: dbId } },
+      select: { status: true },
+    });
+
+    if (existing) {
+      const current = normalizeLibraryStatus(existing.status);
+      const next = statusAfterOpeningChapter(current);
+      if (!next) return { status: current };
+    }
+
+    await prisma.libraryEntry.upsert({
+      where: { userId_seriesId: { userId, seriesId: dbId } },
+      create: { userId, seriesId: dbId, status: 'reading' },
+      update: { status: 'reading' },
+    });
+    return { status: 'reading' };
+  } catch {
+    return { error: 'Could not update your reading status.' };
   }
 }
 

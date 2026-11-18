@@ -1,9 +1,11 @@
+import './themes.generated.css';
 import './globals.css';
 import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ThemeProvider from '../components/ThemeProvider';
+import { DEFAULT_THEME, THEME_BOOTSTRAP_SCRIPT } from '../lib/themes';
 
 /** Base URL for absolute metadata (OG, canonical). Set APP_URL in production. */
 const siteUrl = process.env.APP_URL || 'http://localhost:3000';
@@ -55,17 +57,29 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f1115' },
-  ],
+  // `theme-color` is rendered in <head> below so ThemeProvider can update it as
+  // the reader switches themes; a media-query pair here would shadow it.
   width: 'device-width',
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={DEFAULT_THEME.mode === 'dark' ? 'dark' : undefined}
+      data-theme={DEFAULT_THEME.id}
+      suppressHydrationWarning
+    >
+      <head>
+        {/*
+          Runs before first paint: applies the saved theme (cookie hint) so a
+          signed-in reader on, say, Solarized Light never sees Yoru Dark flash.
+          See lib/themes.ts -> THEME_BOOTSTRAP_SCRIPT.
+        */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        <meta name="theme-color" content={DEFAULT_THEME.palette.bg} />
+      </head>
       <body className="flex min-h-screen flex-col">
         <ThemeProvider>
           <Navbar />

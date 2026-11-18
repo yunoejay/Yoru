@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "env:pull": "vercel env pull .env.local",
     "import:mangadex": "tsx --env-file=.env.local scripts/import-mangadex.ts",
     "import:atsumaru": "tsx --env-file=.env.local scripts/import-atsumaru.ts",
     "migrate:atsumaru": "tsx --env-file=.env.local scripts/migrate-to-atsumaru.ts",
@@ -18,7 +19,13 @@
     "backfill:tags": "tsx --env-file=.env.local scripts/backfill-extra-tags.ts",
     "backfill:formats": "tsx --env-file=.env.local scripts/backfill-format-tags.ts",
     "check:read-progress": "tsx scripts/check-read-progress.ts",
-    "check:updates-for-you": "tsx scripts/check-updates-for-you.ts"
+    "check:updates-for-you": "tsx scripts/check-updates-for-you.ts",
+    "check:env": "tsx scripts/check-env.ts",
+    "themes:build": "tsx scripts/build-themes.ts",
+    "themes:check": "tsx scripts/build-themes.ts --check",
+    "check:themes": "tsx scripts/check-theme-contrast.ts",
+    "predev": "npm run themes:build",
+    "prebuild": "npm run themes:build"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
@@ -46,6 +53,7 @@
     "sharp": "^0.35.4",
     "tailwindcss": "^3.4.14",
     "tsx": "^4.21.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vercel": "^66.0.0"
   }
 }

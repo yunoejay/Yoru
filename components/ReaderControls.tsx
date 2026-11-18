@@ -47,7 +47,7 @@ export default function ReaderControls({
 }: Props) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white/95 backdrop-blur dark:border-white/10 dark:bg-slate-950/90">
-      <div className="h-1 w-full bg-slate-200 dark:bg-gray-800">
+      <div className="h-1 w-full bg-slate-200 dark:bg-slate-800">
         <div
           className="h-full bg-gradient-to-r from-brand to-brand-accent transition-[width] duration-150"
           style={{ width: `${progress}%` }}
